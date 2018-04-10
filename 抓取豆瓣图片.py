@@ -1,37 +1,56 @@
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
 import re
 import urllib.request
 import urllib.parse
+import os
 
 class album:
-    url = r"https://www.douban.com/photos/album/"
-    lines = ""
-    pattern = ""
-    dir_name = []
-    def __init__(self,album_num):
-        self.album_num = album_num
-        self.url = self.url + self.album_num
 
-    def save_douban_html(self):
-        try:
-            response = urllib.request.urlopen(self.url)
-        except:
-            return self.url
-        else:
-            with open("douban.txt", 'w', encoding="utf-8") as f:
-                f.write(response.read().decode("utf-8"))
+    def save_douban_html(self,url):
+        self.url = url
+        response = urllib.request.urlopen(self.url)
+        return response.read().decode("utf-8")
 
-    def dir_file(self):
-        with open("douban.txt", 'r', encoding="utf-8") as f:
-            self.lines = f.readlines()
-        self.pattern = re.compile(r"<div\sclass=.info.>\s*?<h1>(.*?)</h1>\s*?",re.S)
-        self.dir_name = self.pattern.findall(str(self.lines))
+    def dir_file(self,response):
+        self.response = response
+        self.head_pattern = re.compile(r"<head>.*?<title>(.*?)</title>",re.S)
+        self.dir_name = self.head_pattern.findall(self.response)
         print(self.dir_name)
+        self.path = "F:\\杂物\\豆瓣-图\\" + self.dir_name[0]
+        try:
+            os.mkdir(self.path)
+        except:
+            pass
+
+    def get_photo(self,response):
+        self.response = response
+        self.photo_pattern = re.compile(r"<a.*?class=.photolst_photo.*?src=\"(.*?)\"",re.S)#正则匹配图片链接
+        self.photo_name_pattern = re.compile(r".*?(p\d+\.jpg)")#正则匹配图片名称
+        self.photo_page_pattern = re.compile(r"<span\sclass=.next.*?<a\shref=\"(.*?)\"\s>",re.S)#正则匹配图片下一页地址
+        self.get_photo_url = self.photo_pattern.findall(self.response)
+        self.next_page_url = self.photo_page_pattern.findall(self.response)
+        for url in self.get_photo_url:
+            self.get_photo_name =self.photo_name_pattern.findall(url)
+            print(self.get_photo_name)
+            urllib.request.urlretrieve(url,self.path + "\\" + self.get_photo_name[0])  # 把图片下载到对应文件夹
+        return  self.next_page_url
+
+
 
 album_num = input("输入图片专辑：")
-a = album(album_num)
-a.save_douban_html()
-a.dir_file()
+url = r"https://www.douban.com/photos/album/"+album_num
+a = album()
+html = a.save_douban_html(url)
+print(html)
+#a.dir_file(html)
+#next_page = a.get_photo(html)
+#print(next_page)
+#while next_page:
+#    html = a.save_douban_html(next_page[0])
+ #   next_page = a.get_photo(html)
+  #  print(next_page)
 
 
-https://www.douban.com/photos/album/76894387
+#https://www.douban.com/photos/album/153881698
 
