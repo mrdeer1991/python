@@ -3,14 +3,23 @@
 import re
 import urllib.request
 import urllib.parse
+import urllib.error
+import requests
 import os
+
 
 class album:
 
     def save_douban_html(self,url):
         self.url = url
-        response = urllib.request.urlopen(self.url)
-        return response.read().decode("utf-8")
+        try:
+            response = requests.get(self.url)
+            response.raise_for_status()
+            response.encoding = response.apparent_encoding
+        except:
+            print("cuowu")
+        else:
+            return response.text
 
     def dir_file(self,response):
         self.response = response
@@ -43,14 +52,24 @@ url = r"https://www.douban.com/photos/album/"+album_num
 a = album()
 html = a.save_douban_html(url)
 print(html)
-#a.dir_file(html)
-#next_page = a.get_photo(html)
-#print(next_page)
-#while next_page:
-#    html = a.save_douban_html(next_page[0])
- #   next_page = a.get_photo(html)
-  #  print(next_page)
+a.dir_file(html)
+next_page = a.get_photo(html)
+print(next_page)
+while next_page:
+    html = a.save_douban_html(next_page[0])
+    next_page = a.get_photo(html)
+    print(next_page)
 
 
-#https://www.douban.com/photos/album/153881698
+#https://www.douban.com/photos/album/1658059987/
 
+
+'''
+        try:
+            response = urllib.request.urlopen(self.url)
+        except urllib.error.HTTPError as e:
+            print('Error code: ', e.code)
+        else:
+            print(response.geturl())#返回请求的链接地址
+            return response.read().decode("utf-8")
+'''
