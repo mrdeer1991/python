@@ -26,7 +26,7 @@ def encrypt(url,file_list):
     for file in file_list:
         try:
             print(url + "\\" + file)
-            with open(url + "\\" + file,"r",encoding="utf=8") as f:
+            with open(url + "\\" + file,"r") as f:#(url + "\\" + file,"r",encoding="utf=8")，如果文件内容有中文则不能加encoding
                 content = f.readlines()
                 content = "".join(content)
                 print(content)
